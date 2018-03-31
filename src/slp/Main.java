@@ -2,6 +2,7 @@ package slp;
 
 import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.util.HashMap;
 import java.util.HashSet;
 
 
@@ -62,20 +63,59 @@ public class Main
 
   // ////////////////////////////////////////
   // interpreter
-
-  private void interpExp(Exp.T exp)
+  HashMap<String, Integer> varPool = new HashMap<>();
+  private int interpExp(Exp.T exp)
   {
-    new Todo();
+//    new Todo();
+	  if(exp instanceof Exp.Num)
+		  return ((Exp.Num) exp).num;
+	  else if(exp instanceof Exp.Id) {
+		  return varPool.get(((Exp.Id) exp).id);
+	  }
+	  else if (exp instanceof Exp.Op) {
+		Exp.Op op = (Exp.Op) exp;
+		int lv= interpExp(op.left);
+		int rv = interpExp(op.right);
+		switch (op.op) {
+		case  ADD:
+			return lv + rv;
+		case DIVIDE:
+			return lv / rv;
+		case SUB:
+			return lv - rv;
+		case TIMES:
+			return lv * rv;
+		default:
+			new Bug();
+			break;
+		}
+	  }else if (exp instanceof Exp.Eseq) {
+		Exp.Eseq eseq = (Exp.Eseq) exp;
+		interpStm(eseq.stm);
+		return interpExp(eseq.exp);
+	  }
+	  return 0;
   }
 
   private void interpStm(Stm.T prog)
   {
     if (prog instanceof Stm.Compound) {
-      new Todo();
+//      new Todo();
+    	Stm.Compound s = ((Stm.Compound) prog);
+    	interpStm(s.s1);
+    	interpStm(s.s2);
     } else if (prog instanceof Stm.Assign) {
-      new Todo();
+//      new Todo();
+    	Stm.Assign assign = (Stm.Assign) prog;
+    	varPool.put(assign.id, interpExp(assign.exp));
     } else if (prog instanceof Stm.Print) {
-      new Todo();
+    	ExpList.T list = ((Stm.Print) prog).explist;
+    	while (list instanceof ExpList.Pair) {
+    		ExpList.Pair tmPair = (ExpList.Pair)list;
+			System.out.print(interpExp(tmPair.exp)+" ");
+			list = tmPair.list;
+		}
+    	System.out.println(interpExp(((ExpList.Last)list).exp));
     } else
       new Bug();
   }
