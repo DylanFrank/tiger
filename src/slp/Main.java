@@ -4,6 +4,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.util.HashSet;
 
+
 import slp.Slp.Exp;
 import slp.Slp.Exp.Eseq;
 import slp.Slp.Exp.Id;
@@ -22,10 +23,22 @@ public class Main
 
   private int maxArgsExp(Exp.T exp)
   {
-    new Todo();
-    return -1;
+//    new Todo();
+//    return -1;
+	  if(exp instanceof Exp.Eseq) {
+		  return Math.max(maxArgsExp(((Exp.Eseq) exp).exp), maxArgsStm(((Exp.Eseq) exp).stm));
+	  }
+	  return 1;
   }
-
+  private int maxArgsExpList(ExpList.T explist) {
+	  if(explist instanceof ExpList.Pair) {
+		  return maxArgsExp(((ExpList.Pair) explist).exp) + maxArgsExpList(((ExpList.Pair) explist).list);
+	  }
+	  if(explist instanceof ExpList.Last) {
+		  return maxArgsExp(((ExpList.Last) explist).exp);
+	  }
+	  return 0;
+  }
   private int maxArgsStm(Stm.T stm)
   {
     if (stm instanceof Stm.Compound) {
@@ -35,11 +48,13 @@ public class Main
 
       return n1 >= n2 ? n1 : n2;
     } else if (stm instanceof Stm.Assign) {
-      new Todo();
-      return -1;
+//      new Todo();
+//      return -1;
+    	return maxArgsExp(((Stm.Assign) stm).exp);
     } else if (stm instanceof Stm.Print) {
-      new Todo();
-      return -1;
+//      new Todo();
+//      return -1;
+    	return maxArgsExpList(((Stm.Print) stm).explist);
     } else
       new Bug();
     return 0;
