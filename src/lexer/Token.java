@@ -16,10 +16,12 @@ public class Token
     TOKEN_BOOLEAN, // "boolean"
     TOKEN_CLASS, // "class"
     TOKEN_COMMER, // ","
+    TOKEN_DIV,//"/"
     TOKEN_DOT, // "."
     TOKEN_ELSE, // "else"
     TOKEN_EOF, // EOF
     TOKEN_EXTENDS, // "extends"
+    TOKEN_FUNCTION,//"method"
     TOKEN_FALSE, // "false"
     TOKEN_ID, // Identifier
     TOKEN_IF, // "if"
@@ -27,6 +29,7 @@ public class Token
     TOKEN_LBRACE, // "{"
     TOKEN_LBRACK, // "["
     TOKEN_LENGTH, // "length"
+    TOKEN_LONG, //"long"
     TOKEN_LPAREN, // "("
     TOKEN_LT, // "<"
     TOKEN_MAIN, // "main"
