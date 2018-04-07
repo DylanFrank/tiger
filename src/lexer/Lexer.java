@@ -3,6 +3,7 @@ package lexer;
 import static control.Control.ConLexer.dump;
 
 import java.io.InputStream;
+import java.io.PushbackInputStream;
 import java.util.HashMap;
 
 import lexer.Token.Kind;
@@ -11,15 +12,18 @@ import util.Todo;
 public class Lexer
 {
   String fname; // the input file name to be compiled
-  InputStream fstream; // input stream for the above file
+  PushbackInputStream fstream; // input stream for the above file
   static int linenum =1;
   static HashMap<String, Kind> tokenPool;
   public Lexer(String fname, InputStream fstream)
   {
 	 if(tokenPool == null)initToken();
     this.fname = fname;
-    this.fstream = fstream;
+    this.fstream = new PushbackInputStream(fstream);
   }
+  /*
+   * init tokenPool with a HashMap
+   */
   private void initToken() {
 	  tokenPool = new HashMap<>();
 	  tokenPool.put(String.valueOf('+'), Kind.TOKEN_ADD);
@@ -85,35 +89,40 @@ public class Lexer
       return new Token(Kind.TOKEN_EOF, linenum);
     
     String s  = String.valueOf((char)c);
-    switch (c) {
-    case '+':
-      return new Token(Kind.TOKEN_ADD, linenum);
-     
-    default:
-      // Lab 1, exercise 2: supply missing code to
-      // lex other kinds of tokens.
-      // Hint: think carefully about the basic
-      // data structure and algorithms. The code
-      // is not that much and may be less than 50 lines. If you
-      // find you are writing a lot of code, you
-      // are on the wrong way.
-      new Todo();
-      return null;
+    while (tokenPool.get(s)==null) {
+		c = this.fstream.read();
+		if(c=='\n'||c==' '|| c=='\t' || c==-1 || tokenPool.get(String.valueOf((char)c))!=null) {
+			this.fstream.unread(c);
+			break;
+		}
+		s+= (char)c;
+	}
+    if(tokenPool.get(s) !=null)return new Token(tokenPool.get(s), linenum);
+    else {
+    	try {
+			int num = Integer.parseInt(s);
+			return new Token(Kind.TOKEN_NUM,linenum,s);
+		} catch (NumberFormatException e) {
+			// TODO: handle exception
+			return new Token(Kind.TOKEN_ID, linenum, s);
+		}
     }
   }
 
   public Token nextToken()
   {
     Token t = null;
-
+//    System.out.println("now on nextToken");
     try {
       t = this.nextTokenInternal();
+//      System.out.println(t.toString());
     } catch (Exception e) {
       e.printStackTrace();
       System.exit(1);
     }
     if (dump)
       System.out.println(t.toString());
+//    System.out.println(t);
     return t;
   }
 }
