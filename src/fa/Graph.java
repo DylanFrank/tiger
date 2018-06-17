@@ -1,59 +1,64 @@
 package fa;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public final class Graph {
-	private final static String curDir = System.getProperty("user.dir")+System.getProperty("file.separator")+"output";
+	private Path curPath = Paths.get("./output");
 	private final static String sysLineSep = System.getProperty("line.separator");
-	private final static byte[] lsByteArr = sysLineSep.getBytes();
 	private ArrayList<String> edges = new ArrayList<>();
 	private ArrayList<String> nodes = new ArrayList<>();
-
 	public Graph() {
 		super();
 	}
 	
+	public Graph(Path outputPath) {
+		super();
+		this.curPath = outputPath;
+	}
+
 	public void addEdge(int from,int to,Character c) {
 		edges.add(String.valueOf(from)+" -> "+String.valueOf(to)+String.format("[label=\"%c\"]", c));
 	}
-	private File writeDotFile(String name) {
-		File dotFile = new File(curDir, name+".dot");
-		
+	private Path writeDotFile(String name) {
+		name = name+".dot";
+		Path dotFile = curPath.resolve(name);
 		// write dot file
-		try(FileOutputStream fos = new FileOutputStream(dotFile)){
-			fos.write(String.valueOf("digraph tmp{").getBytes());
-			fos.write(lsByteArr);
-			writeNodes(fos);
-			writeEdges(fos);
-			fos.write(String.valueOf("}").getBytes());
-			fos.write(lsByteArr);
+		try(BufferedWriter fw = Files.newBufferedWriter(dotFile, Charset.forName("US-ASCII"))){
+			fw.write(String.valueOf("digraph tmp{"));
+			fw.write(sysLineSep);
+			writeNodes(fw);
+			writeEdges(fw);
+			fw.write(String.valueOf("}"));
+			fw.write(sysLineSep);
 		}catch (IOException e) {
 			// TODO: handle exception
 			e.printStackTrace();
 		}
 		return dotFile;
 	}
-	private void writeEdges(OutputStream os) throws IOException {
+	private void writeEdges(Writer writer) throws IOException {
 		for(String e: edges){
-			os.write(e.getBytes());
-			os.write(lsByteArr);
+			writer.write(e);
+			writer.write(sysLineSep);
 		}
 	}
-	private void writeNodes(OutputStream os) throws IOException {
+	private void writeNodes(Writer writer) throws IOException {
 		for(String e: nodes){
-			os.write(e.getBytes());
-			os.write(lsByteArr);
+			writer.write(e);
+			writer.write(sysLineSep);
 		}
 	}
 	public void draw(String name) {
-		File dotFile = writeDotFile(name);
-		File png = new File(curDir,name+".png");
-		String cmd = String.format("dot %s -T png -o %s", dotFile.getAbsolutePath(),png.getAbsolutePath());
+		Path dotFile = writeDotFile(name);
+		Path png = curPath.resolve(name+".png");
+		String cmd = String.format("dot %s -T png -o %s", dotFile.toAbsolutePath(),png.toAbsolutePath());
 		try {
 			Runtime.getRuntime().exec(cmd);
 		} catch (IOException e) {
